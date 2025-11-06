@@ -14,12 +14,32 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+import os
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from .views import router
+
+CODESPACE_NAME = os.environ.get('CODESPACE_NAME')
+def make_url(component):
+    if CODESPACE_NAME:
+        return f"https://{CODESPACE_NAME}-8000.app.github.dev/api/{component}/"
+    return f"http://localhost:8000/api/{component}/"
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'users': make_url('users'),
+        'teams': make_url('teams'),
+        'activities': make_url('activities'),
+        'leaderboard': make_url('leaderboard'),
+        'workouts': make_url('workouts'),
+    })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('', api_root),
 ]
 
